@@ -1,0 +1,557 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>Plotserver</title>
+        <link href="/static/client.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="/static/config.js"></script>
+        <script type="text/javascript" src="/static/common.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript" src="https://canvg.googlecode.com/svn/trunk/rgbcolor.js"></script> 
+        <script type="text/javascript" src="https://canvg.googlecode.com/svn/trunk/canvg.js"></script>
+        <style type="text/css"></style>
+        <script type="text/javascript">
+            var options = {fontName: "georgia", lineWidth: 4, pointSize: 10, colors: ["blue"], curveType: "function", lines: ["Some data"], title: "Some title"};
+            var colors = ["blue", "green", "red", "purple", "black", "orange"];
+            var baseURL = "";
+            var urlParams = {};
+            var lastData;
+            var lastAggregateData;
+            var charts = {};
+            var viewMode = false;
+
+            // from http://liveweb.archive.org/web/20121005211251/http://lyncd.com/2009/03/better-google-analytics-javascript/
+            function gaSSDSLoad (acct) {
+                var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www."),
+                    pageTracker,
+                    s;
+                s = document.createElement('script');
+                s.src = gaJsHost + 'google-analytics.com/ga.js';
+                s.type = 'text/javascript';
+                s.onloadDone = false;
+                function init () {
+                    pageTracker = _gat._getTracker(acct);
+                    pageTracker._trackPageview();
+                }
+                s.onload = function () {
+                    s.onloadDone = true;
+                    init();
+                };
+                s.onreadystatechange = function() {
+                    if (('loaded' === s.readyState || 'complete' === s.readyState) && !s.onloadDone) {
+                        s.onloadDone = true;
+                        init();
+                    }
+                };
+                document.getElementsByTagName('head')[0].appendChild(s);
+            }
+
+            function date(str)
+            {
+                var min = new Date(Date.parse(str));
+                try {
+                    for (var i = 0; i < lastData[0].length; i++) {
+                        val = lastData[0][i];
+                        var valDate = new Date(Date.parse(val));
+                        if (valDate >= min)
+                            return i;
+                    }
+                } catch(error) { return 0; }
+            }
+
+            function getUrlParams()
+            {
+                var vars = {};
+                var parts = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+                for(var i = 0; i < parts.length; i++) {
+                    if (parts[i].indexOf("=") >= 0) {
+                        kv = parts[i].split('=');
+                        vars[kv[0]] = decodeURIComponent(kv[1]);
+                    } else {
+                        if (parts[i].indexOf("http://") == 0 || parts[i].indexOf("https://") == 0)
+                            continue;
+                        vars[parts[i]] = true;
+                    }
+                }
+                return vars;
+            }
+
+            function saveImage() {
+                var chartContainer;
+                if (options["chart"] == "column") {
+                    chartContainer = document.getElementById("columnChart");
+                } else if (options["chart"] == "area") {
+                    chartContainer = document.getElementById("areaChart");
+                } else if (options["chart"] == "pie") {
+                    chartContainer = document.getElementById("pieChart");
+                } else {
+                    chartContainer = document.getElementById("lineChart");
+                }
+                var svg = $(chartContainer).find('svg').parent().html();
+                var doc = chartContainer.ownerDocument;
+                var canvas = doc.createElement('canvas');
+                canvas.setAttribute('style', 'position: absolute; ' + '');
+                doc.body.appendChild(canvas);
+                canvg(canvas, svg);
+                var imgData = canvas.toDataURL("image/png");
+                canvas.parentNode.removeChild(canvas);
+                window.location = imgData;
+            }
+
+            function init() {
+                baseURL = location.protocol + '//' + location.host + location.pathname;
+                document.title = location.pathname.substring(1) + " - Plotserver";
+
+                var types = ["lineChart", "columnChart", "areaChart", "pieChart"];
+                var k, max;
+                for (k = 0, max = types.length; k < max; k++) {
+                    var type = types[k];
+                    if (type == "lineChart")
+                        charts[type] = new google.visualization.LineChart(document.getElementById(type));
+                    else if (type == "columnChart")
+                        charts[type] = new google.visualization.ColumnChart(document.getElementById(type));
+                    else if (type == "areaChart")
+                        charts[type] = new google.visualization.AreaChart(document.getElementById(type));
+                    else if (type == "pieChart")
+                        charts[type] = new google.visualization.PieChart(document.getElementById(type));
+                }
+
+                urlParams = getUrlParams();
+                setOptions();
+                get();
+                getOptions();
+                setViewMode();
+                if (Config.googleAnalyticsTrackingCode != "")
+                    gaSSDSLoad(Config.googleAnalyticsTrackingCode);
+            }
+
+            function onResize() {
+                formatPage();
+                draw(lastData);
+            }
+
+            function editMode() {
+                if (document.getElementById("editView").innerHTML == "Edit plot") {
+                    $("#editContainer").show();
+                    formatPage();
+                    if (lastData != undefined)
+                        draw(lastData);
+                    document.getElementById("editView").innerHTML = "Back to plot only";
+                } else {
+                    $("#editContainer").hide();
+                    formatPage();
+                    if (lastData != undefined)
+                        draw(lastData);
+                    document.getElementById("editView").innerHTML = "Edit plot";                }
+            }
+
+            function formatPage() {
+                if ($("#editContainer").is(':hidden')) {
+                    $("#plotContainer").width(0.9 * $(window).width());
+                } else {
+                    $("#plotContainer").width(0.45 * $(window).width());
+                    $("#editContainer").width(0.45 * $(window).width());
+                }
+
+                if (viewMode)
+                {
+                    $("#plot").height($("#plotContainer").height());
+                    $("#viewContainer").height($(window).height());
+                    $("#plotContainer").height($(window).height());
+                    $("#plotContainer").width($(window).width());
+                }
+                else
+                {
+                    $("#plotContainer").height(0.8 * $(window).height());
+                    $("#plot").height($("#plotContainer").height());
+                    $("#editContainer").height($("#viewContainer").height());
+                    $("#numbers").height($("#plotContainer").height() - $("#options").height() - 2); // magic number
+                    $("#optionsHelp").css("top", $("#options").height() * 1.1);
+                    $("#optionsHelp").css("right", 60);
+                    $("#numbersHelp").css("top", $("#numbers").position().top + $("#numbers").height() - 20);
+                    $("#numbersHelp").css("right", 60);
+                }
+
+            }
+
+            function aggregate(data) {
+                var aggregateFunc = Util.id;
+                if (options["group"] == "week")
+                    aggregateFunc = Util.toYearWeek;
+                else if (options["group"] == "month")
+                    aggregateFunc = Util.toYearMonth;
+                else if (options["group"] == "year")
+                    aggregateFunc = Util.toYear;
+
+                var aggregate = {}; // aggregate => [[],[],[]...]
+                for (var i = 0; i < data[0].length; i++) {
+                    for (var j = 0; j < Util.length(data); j++) {
+                        var val = data[j][i];
+                        if (j == 0)
+                            key = aggregateFunc(val)
+                        else {
+                            var multiValues = aggregate[key] || []; // default is []
+                            var values = multiValues[j - 1] || []; // default is []
+                            values.push(val);
+                            multiValues[j - 1] = values;
+                            aggregate[key] = multiValues;
+                        }
+                    }
+                }
+
+                var metricFunc = null;
+                if (options["metric"] == "count")
+                    metricFunc = Util.count;
+                else if (options["metric"] == "min")
+                    metricFunc = Util.min;
+                else if (options["metric"] == "max")
+                    metricFunc = Util.max;
+                else if (options["metric"] == "sum")
+                    metricFunc = Util.sum;
+                else if (options["metric"] == "avg")
+                    metricFunc = Util.avg;
+                else if (options["metric"] == "median")
+                    metricFunc = Util.median;
+
+                if (metricFunc == null)
+                {
+                    return;
+                }
+                
+                var sorted_keys = Util.keys(aggregate).sort()
+                rows = []
+                for (var i = 0; i < sorted_keys.length; i++) {
+                    var key = sorted_keys[i];
+                    row = []
+                    row.push(key);
+                    var multiValues = aggregate[key];
+                    for (var j = 0; j < multiValues.length; j++) {
+                        var values = multiValues[j];
+                        var metric = metricFunc(values);
+                        row.push(metric);
+                    }
+                    rows.push(row);
+                }
+
+                // convert to column format for draw()
+                var columns = []
+                for (var i = 0; i < rows[0].length; i++) {
+                    var column = [];
+                    for (var j = 0; j < rows.length; j++) {
+                        column.push(rows[j][i]);
+                    }
+                    columns.push(column);
+                }
+
+                lastAggregateData = columns;
+            }
+
+            function onOptionsChanged() {
+                try {
+                    var tryObj = eval('(' + document.getElementById("options").value + ')');
+                    options = tryObj;
+                    optionsText = document.getElementById("options").value;
+                    if (options["group"]) {
+                        aggregate(lastData);
+                        drawPlot(lastAggregateData);
+                    }
+                    else {
+                        drawPlot(lastData);
+                    }
+                } catch (error) { console.log(error) }
+            }
+
+            function setOptions() {
+                optionsText = JSON.stringify(options, null, 4);
+                document.getElementById("options").value = optionsText;
+            }
+
+            function get() {
+                $.getJSON(baseURL + "?get&jsonp=?", function(data) { onData(data); });
+            }
+
+            function getOptions() {
+                $.getJSON(baseURL + "?getOptions&jsonp=?", function(data) { onOptions(data); });
+            }
+            
+            function poll() {
+                $.getJSON(baseURL + "?poll&jsonp=?", function(data) { onData(data); });
+            }
+            
+            function onData(data) {
+                if (data == "NOT FOUND") {
+                    editMode();
+                } else {
+                    formatPage();
+                    draw(data);
+                    lastData = data;
+                    if (Config.useLongPoll)
+                        setTimeout(function() { poll() }, 1*1000); // long poll for new data
+                }
+            }
+
+            function onOptions(data) {
+                if (data == "NOT FOUND")
+                    return;
+                optionsText = Base64.decode(data);
+                document.getElementById("options").value = optionsText;
+                onOptionsChanged();
+            }
+
+            function last(data) {
+                var last = options["last"];
+                if (!last)
+                    return;
+                var len = data[0].length;
+                if (len <= last)
+                    return;
+                data[0] = data[0].slice(len - last);
+                data[1] = data[1].slice(len - last);
+            }
+            
+            function draw(data) {
+                drawNumbers(data);
+
+                if (options["group"]) {
+                    aggregate(data);
+                    drawPlot(lastAggregateData);
+                }
+                else {
+                    drawPlot(data);
+                }
+
+                //drawPlot(data);
+                
+                drawOptions();
+                updateURL();
+            }
+
+            function drawNumbers(data) {
+                str = Format.serialize(data);
+                document.getElementById("numbers").innerHTML = str;
+            }
+
+            function drawPlot(data) {
+                var types = ["columnChart", "lineChart", "areaChart", "pieChart"];
+                var k, max;
+                var cc = document.getElementById("columnChart");
+                var lc = document.getElementById("lineChart");
+                var ac = document.getElementById("areaChart");
+                var pc = document.getElementById("pieChart");
+
+                if (options["chart"] == "column") {
+                    lc.style.display = "none";
+                    ac.style.display = "none";
+                    pc.style.display = "none";
+                    cc.style.display = "block";
+                } else if (options["chart"] == "area") {
+                    options["isStacked"] = true;
+                    lc.style.display = "none";
+                    cc.style.display = "none";
+                    pc.style.display = "none";
+                    ac.style.display = "block";                
+                } else if (options["chart"] == "pie") {
+                    lc.style.display = "none";
+                    cc.style.display = "none";
+                    ac.style.display = "none";
+                    pc.style.display = "block";                
+                } else {
+                    cc.style.display = "none";
+                    ac.style.display = "none";
+                    pc.style.display = "none";
+                    lc.style.display = "block";
+                }
+
+                if (urlParams.hasOwnProperty("ratio")) {
+                    if (!options.hasOwnProperty("vAxis"))
+                        options["vAxis"] = {};
+                    options["vAxis"].format = "# '%'";
+                }
+
+                for (k = 0, max = types.length; k < max; k++) {
+                    var type = types[k];
+                    var chart = charts[type];
+                    var xtypes = ["number", "date", "datetime", "string"];
+                    for (var index in xtypes) {
+                        var xtype = xtypes[index];
+                        try {
+                            var dataTable = new google.visualization.DataTable();
+                            if (type == "pieChart")
+                                xtype = "string";
+                            dataTable.addColumn(xtype, "x");
+                            for (var j = 0; j < Util.length(data) - 1; j++) {
+                                if (options.lines[j] === undefined)
+                                    options.lines[j] = "Line " + (j + 1);
+                                if (options.colors[j] === undefined)
+                                    options.colors[j] = colors[j];
+                                dataTable.addColumn("number", options.lines[j]);
+                            }
+                            for (var i = 0; i < data[0].length; i++) {
+                                var row = [];
+                                var sum = 0;
+                                for (var j = 0; j < Util.length(data); j++) {
+                                    val = data[j][i];
+                                    if (j == 0) {
+                                        if (typeof val == "number")
+                                            ;
+                                        else if (val.indexOf("w") >= 0)
+                                            ; // weekly
+                                        else if (val.indexOf("-") > 0 && val.indexOf(" ") == -1)
+                                            ; // monthly
+                                        else if (val.indexOf("y") >= 0)
+                                            ; // yearly
+                                        else if (val.indexOf("-") > 0 || val.indexOf(" ") >= 0)
+                                            val = new Date(Date.parse(val));
+                                        else {
+                                            val = parseFloat(val);
+                                            if (urlParams.hasOwnProperty("ratio"))
+                                                sum += val;
+                                        }
+                                    } else {
+                                        val = parseFloat(val);
+                                        if (urlParams.hasOwnProperty("ratio"))
+                                            sum += val;
+                                    }
+                                    if (type == "pieChart" && j == 0)
+                                        val = "" + data[j][i];
+                                    row.push(val);
+                                }
+                                if (urlParams.hasOwnProperty("ratio")) {
+                                    for (var j = 1; j < row.length; j++) {
+                                        row[j] /= sum;
+                                        row[j] *= 100;
+                                    }
+                                }
+                                dataTable.addRow(row);
+                            }
+                            if (urlParams.hasOwnProperty("title")) {
+                                options["title"] = urlParams["title"];
+                            }
+                            chart.draw(dataTable, options);
+                            //return;
+                        } catch(error) { console.log(error); }
+                    }
+                }
+            }
+
+            function drawOptions() {
+                //document.getElementById("options").value = JSON.stringify(options, null, 4);
+            }
+
+            function updateURL() {
+                var parts = [];
+                for (var key in options)
+                    parts.push(key + "=" + encodeURIComponent(JSON.stringify(options[key])));
+                var url = baseURL + "?" + parts.join("&");
+                //url = encodeURI(url);
+                //document.getElementById("url").href = url;
+            }
+
+            function shorten() {
+                $.getJSON(baseURL + "?shorten&url=" + encodeURIComponent(document.getElementById("url").href) + "&jsonp=?", function(data) {
+                    document.getElementById("url").href = data;
+                });
+            }
+
+            function save() {
+                $("#save").html("Saving...");
+                saveData(); // calls saveOptions()
+            }
+
+            function saveData() {
+                var fileContents = numbers.value;
+                var data = Format.parse(fileContents);
+                if (!Model.verify(data)) {
+                    alert("Error: The data you sent me in the HTTP POST request is malformed. Accepted format: k1,v1 \\n k2,v2 \\n ...\n");
+                    return;
+                }
+                $.post( baseURL + "?set", fileContents, function(data) {
+                    data = Util.trim(data);
+                    if (data != "File written.")
+                        alert(data);
+                    else
+                        saveOptions();
+                }, "text")
+            }
+
+            function saveOptions() {
+                var optionsContents = document.getElementById("options").value;
+                try {
+                    eval('(' + document.getElementById("options").value + ')')
+                } catch(error) {
+                    alert("The options are not valid JSON.");
+                    return;
+                }
+                $.post( baseURL + "?setOptions", optionsContents, function(data) {
+                    data = Util.trim(data);
+                    if (data != "Options written.")
+                        alert(data);
+                }, "text");
+                $("#save").html("Saving... Done!");
+                window.setInterval(function () { $("#save").html("Save") }, 500);
+            }
+
+            function showData() {
+                var fileContents = numbers.value;
+                var data = Format.parse(fileContents);
+                if (!Model.verify(data))
+                    return;
+                lastData = data;
+                
+                if (options["group"]) {
+                    aggregate(data);
+                    drawPlot(lastAggregateData);
+                }
+                else {
+                    drawPlot(data);
+                }
+
+                drawOptions();
+            }
+
+            function setViewMode() {
+                if (urlParams.hasOwnProperty("view")) {
+                    viewMode = true;
+                    $("#viewAsImage").hide();
+                    $("#editView").hide();
+                    $("html").css("margin", "0");
+                    $("body").css("margin", "0");
+                    $("#viewContainer").css("height", "100%");
+                    $("#plotContainer").css("height", "100%");
+                    $("#plotContainer").css("margin", "0");
+                    $("#plotContainer").css("padding", "0");
+                    $("#plotContainer").css("border", "0");
+                    if (urlParams.hasOwnProperty("link")) {
+                        $("#viewContainer").append("<a class='downloadLink' target='top_' href='" + baseURL + "?download'>data</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a class='downloadLink' target='top_' href='" + baseURL + "'>view</a>");
+                        
+                    }
+                }
+            }
+
+            google.load('visualization', '1.0', {'packages':['corechart', 'annotatedtimeline']});
+            google.setOnLoadCallback(init);
+        </script>
+    </head>
+    <body onResize="onResize()">
+        <div id="viewContainer">
+            <div id="plotContainer">
+                <div id="lineChart"></div>
+                <div id="columnChart"></div>
+                <div id="areaChart"></div>
+                <div id="pieChart"></div>
+            </div>
+            <button id="viewAsImage" onClick="saveImage()">View as image</button>
+            <button id="editView" onClick="editMode()">Edit plot</button>
+        </div>
+        
+        <div id="editContainer">
+            <textarea id="options" class="textarea" onInput="onOptionsChanged()"></textarea>
+            <textarea id="numbers" class="textarea" onKeyUp="showData()" onChange="showData()"></textarea>
+            <button id="save" onClick="save()">Save</button>
+            <a id="optionsHelp" class="helpOverlay" target="top_" href="https://google-developers.appspot.com/chart/interactive/docs/gallery/linechart">Chart options</a>
+            <a id="numbersHelp" class="helpOverlay" target="top_" href="/static/sample.csv">Example .csv data</a>
+        </div>
+    </body>
+</html>

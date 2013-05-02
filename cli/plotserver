@@ -1,0 +1,135 @@
+#!/bin/sh
+
+# You can specify the following environment variables
+# PLOTSERVER_HOST, must end with "/", eg. "http://yourplotserver.com/",
+# PLOTSERVER_CURL_OPTIONS, eg. "-u username:password"
+
+TMP_FILE=`mktemp /tmp/tmp.XXXXXX`
+SCRIPT_VERSION=2013-04-30.00
+USAGE_HELP="\
+USAGE_HELP: cat mydata.csv | $0 [OPTION]... set DATASET
+   or: $0 [OPTION]... update DATASET KEY VALUES
+   or: $0 [OPTION]... delete DATASET
+   or: $0 [OPTION]... cat DATASET
+
+DATASET is a plotserver URL like http://localhost:9090/mtrencseni/sample.csv
+
+CSV files are , separated files.
+
+In the case of update KEY is a VALUE of X-axis
+
+Options:
+     -d         don't execute the command but print out behind the scene CURL 
+     --help     display this help and exit.
+     --version  display version info and exit.
+"
+
+DEBUG=false
+
+while test $# -ne 0; do
+  case $1 in
+   
+   	-d) DEBUG=true;; 
+    --help) echo "$USAGE_HELP"; exit $?;;
+
+    --version) echo "$0 $SCRIPT_VERSION"; exit $?;;
+	
+	set) ACTION=set
+			DATASET=$2
+	shift;;
+
+	update) ACTION=update
+				DATASET=$2
+				KEY=$3
+                VALUE=$4
+                while test "$5"; do
+                    shift
+                    VALUE="$VALUE,$4"
+                done
+				shift
+				shift
+				shift
+				;;
+	delete) ACTION=delete
+			DATASET=$2
+	shift;;
+
+    cat) ACTION=cat
+            DATASET=$2
+    shift;;
+
+    test) ACTION=test
+            DATASET=$2
+    shift;;
+
+    --)	shift
+	break;;
+
+    -*)	echo "$0: invalid option: $1" >&2
+	exit 1;;
+
+    *)  break;;
+  esac
+  shift
+done
+
+if test -z $ACTION; then
+	 echo "$0: no command specified." >&2
+	 exit 1
+fi
+
+if test -z $DATASET; then
+	 echo "$0: no DATASET specified." >&2
+	 exit 1
+fi
+
+if test $ACTION = update && test -z $KEY; then
+	echo "$0: no KEY specified." >&2
+	exit 1
+fi
+
+if test $ACTION = update && test -z $VALUE; then
+	echo "$0: no VALUE specified." >&2
+	exit 1
+fi
+
+BASE_URI=${PLOTSERVER_HOST}${DATASET}
+
+case $ACTION in
+	delete)
+		CURL_URI=${BASE_URI}?delete ;;
+
+    cat)
+        CURL_URI=${BASE_URI}?download ;;
+
+	set)
+		cat /dev/stdin > $TMP_FILE
+		CURL_URI="--data-binary @${TMP_FILE} ${BASE_URI}?set" ;;
+
+	update)
+		CURL_URI="-d  \"$KEY, $VALUE\" ${BASE_URI}?update" ;;
+    
+    test)
+        CURL_URI=${BASE_URI}?download
+        CURL_PARAM="${PLOTSERVER_CURL_OPTIONS} -s ${CURL_URI}"
+        COUNT=`curl $CURL_PARAM | grep "File not found" | wc -l`
+        if test $COUNT = "1"; then
+            echo "Does not exist"
+            exit 1
+        fi
+        echo "Exists"
+        exit 0 ;;
+esac
+
+CURL_PARAM="${PLOTSERVER_CURL_OPTIONS} ${CURL_URI}"
+
+if $DEBUG; then
+	echo curl $CURL_PARAM
+else
+	eval curl $CURL_PARAM
+fi
+
+if [ -f $TMP_FILE ];
+then
+   rm $TMP_FILE
+fi

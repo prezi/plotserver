@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <title>Plotserver</title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+
+        <pre style="margin:50px;">
+Welcome to <span style="font-weight: bold">Plotserver</span>, a service for storing and plotting XY data!
+
+-
+
+To create a new file, simply enter an URL into your browser like:
+
+  https://HOSTNAME/yourname/yourfile.csv
+
+You can then edit the data in the browser. Here's a sample file:
+
+  2012-09-19, 1, 1
+  2012-09-20, 2, 4
+  2012-09-21, 3, 9
+  2012-09-22, 4, 16
+
+-
+
+You can also access the data as a simple CSV file by appending "?download" to the url:
+
+  https://HOSTNAME/yourname/yourfile.csv?download
+  
+-
+
+To use Plotserver from the command line, get the source code:
+
+  $ git clone https://github.com/prezi/plotserver/
+
+The CLI is 'cli/plotserver'. Examples:
+
+  $ plotserver --help
+  $ cat test.csv | plotserver set yourname/dataset
+  $ plotserver cat yourname/dataset
+  $ plotserver update yourname/dataset 2012-09-21 1000 100
+  $ plotserver delete yourname/dataset
+
+-
+
+Cool feature alert! You can aggregate data! Put this into the options part:
+
+"group":  "year",   # or "month", "week"
+"metric": "avg"     # or "sum", "min", "max", "median"
+
+Support for other plot types:
+
+"chart": "area"     # or "column" or "pie" or the default, "line"
+
+        </pre>
+    </body>
+</html>

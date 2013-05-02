@@ -1,0 +1,12 @@
+{
+  "name": "plotserver",
+  "version": "1.0.0",
+  "description": "An awesome webserver for plotting simple timeseries data.",
+  "author": "Marton Trencseni <mtrencseni@gmail.com> (https://github.com/mtrencseni)",
+  "dependencies": {
+    "mime": "1.2.x",
+    "scribe": ">= 0.0.8"
+  },
+  "engine": "node >= 0.8.12",
+  "scripts": {"start": "node plotserver.js config/test.js"}
+}
