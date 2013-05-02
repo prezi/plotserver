@@ -3,10 +3,12 @@
 
 ## In 20 words or less?
 
-Plotserver is a node.js application for easy plotting of timeseries and other simple data.
+Plotserver is a node.js application for easy plotting of timeseries and other simple XY data.
 
 ## Installation
 ---
+
+You will need a working node.js installation and git:
 
 ```bash
 git clone git@github.com:prezi/plotserver.git
@@ -33,13 +35,16 @@ Let's say you have some simple CSV (comma seperated values) data, like
 
 You just want to quickly visualize it, and then share with some of your co-workers. Plotserver to the rescue!
 
-Just open http://HOSTNAME/yourname/dataset, copy and paste your data, and the chart appears!
-The dataset (file) is automatically created when you click Save in the browser.
+Just open `http://HOSTNAME/yourname/dataset`, copy and paste your data, and the chart appears!
+
+![Plotserver screenshot](https://github.com/prezi/plotserver/img/screenshot.png)
+
+The dataset (file) is automatically created when you click `Save` in the browser.
 Optionally set the options to prettify the chart, and send the URL over to your buddies.
 Done!
 
-You can also send and retrieve data from Plotserver using a command line tool, conveniently called 'plotserver'.
-The command line is in the 'cli' directory:
+You can also send and retrieve data from Plotserver using a command line tool, conveniently called `plotserver`.
+The command line is in the `cli` directory:
 
 ```bash
 # above example from the command line
@@ -61,10 +66,10 @@ One example is our data warehouse, which sends new data points to Plotserver eve
 
 ## Details
 
-The node application stores the data in the 'public' folder in CSV files. At Prezi we have a cronjob which pushes any changes here to a github repository, so we get free versioning of our datasets.
-To set server options, see the 'config' folder's 'test.js' and 'production.js' examples. You can add custom loggers in 'logger.js'.
-The client has a few settings, these can be found in 'static/config.js'.
-The cli tool has a conveniance feature. If you set $PLOTSERVER_HOST, then you can just specify the path part of your datasets when using it. For example:
+The node application stores the data in the `public` folder in CSV files. At Prezi we have a cronjob which pushes any changes here to a github repository, so we get free versioning of our datasets.
+To set server options, see the `config` folder's `test.js` and `production.js` examples. You can add custom loggers in `logger.js`.
+The client has a few settings, these can be found in `static/config.js`.
+The cli tool has a conveniance feature: if you set `$PLOTSERVER_HOST`, then you can just specify the path part of your datasets when using it. For example:
 
 ```bash
 # above example from the command line
@@ -80,7 +85,7 @@ EOF
 $ cli/plotserver cat "yourname/dataset"
 ```
 
-Additionally, you can specify $PLOTSERVER_CURL_OPTIONS, these will be passed to curl as-is.
+Additionally, you can specify `$PLOTSERVER_CURL_OPTIONS`, these will be passed to curl as-is.
 
 ## Contributing
 
