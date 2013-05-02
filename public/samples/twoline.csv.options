@@ -1,0 +1,13 @@
+{
+    "fontName": "georgia",
+    "lineWidth": 4,
+    "pointSize": 10,
+    "colors": [
+        "blue", "red"
+    ],
+    "curveType": "function",
+    "lines": [
+        "Squares", "Cubes"
+    ],
+    "title": "Two line example"
+}

@@ -1,0 +1,14 @@
+{
+    "chart": "pie",
+    "fontName": "georgia",
+    "lineWidth": 4,
+    "pointSize": 10,
+    "colors": [
+        "blue", "green", "red", "pink"
+    ],
+    "curveType": "function",
+    "lines": [
+        "Some data"
+    ],
+    "title": "What is air made of?"
+}

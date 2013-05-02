@@ -1,0 +1,14 @@
+{
+    "chart": "column",
+    "fontName": "georgia",
+    "lineWidth": 4,
+    "pointSize": 10,
+    "colors": [
+        "green"
+    ],
+    "curveType": "function",
+    "lines": [
+        "Squares"
+    ],
+    "title": "Column chart example"
+}

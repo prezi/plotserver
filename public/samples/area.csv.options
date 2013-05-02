@@ -1,0 +1,14 @@
+{
+    "chart": "area",
+    "fontName": "georgia",
+    "lineWidth": 4,
+    "pointSize": 10,
+    "colors": [
+        "blue", "purple"
+    ],
+    "curveType": "function",
+    "lines": [
+        "Squares", "Squares"
+    ],
+    "title": "Stacked area chart example"
+}
