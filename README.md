@@ -37,7 +37,7 @@ You just want to quickly visualize it, and then share with some of your co-worke
 
 Just open `http://HOSTNAME/yourname/dataset`, copy and paste your data, and the chart appears!
 
-![Plotserver screenshot](https://raw.github.com/prezi/plotserver/master/img/screenshot.png)
+![Plotserver screenshot](https://raw.github.com/prezi/plotserver/raw/master/img/screenshot.png)
 
 The dataset (file) is automatically created when you click `Save` in the browser.
 Optionally set the options to prettify the chart, and send the URL over to your buddies.
