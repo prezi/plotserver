@@ -264,17 +264,6 @@
                 document.getElementById("options").value = optionsText;
                 onOptionsChanged();
             }
-
-            function last(data) {
-                var last = options["last"];
-                if (!last)
-                    return;
-                var len = data[0].length;
-                if (len <= last)
-                    return;
-                data[0] = data[0].slice(len - last);
-                data[1] = data[1].slice(len - last);
-            }
             
             function draw(data) {
                 drawNumbers(data);
