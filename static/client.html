@@ -6,6 +6,7 @@
         <link href="/static/client.css" rel="stylesheet" type="text/css" />
         <script type="text/javascript" src="/static/config.js"></script>
         <script type="text/javascript" src="/static/common.js"></script>
+        <script type="text/javascript" src="/static/aggregate.js"></script>
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script type="text/javascript" src="https://canvg.googlecode.com/svn/trunk/rgbcolor.js"></script> 
@@ -176,13 +177,13 @@
             }
 
             function aggregate(data) {
-                var aggregateFunc = Util.id;
+                var aggregateFunc = Aggregate.id;
                 if (options["group"] == "week")
-                    aggregateFunc = Util.toYearWeek;
+                    aggregateFunc = Aggregate.toYearWeek;
                 else if (options["group"] == "month")
-                    aggregateFunc = Util.toYearMonth;
+                    aggregateFunc = Aggregate.toYearMonth;
                 else if (options["group"] == "year")
-                    aggregateFunc = Util.toYear;
+                    aggregateFunc = Aggregate.toYear;
 
                 var aggregate = {}; // aggregate => [[],[],[]...]
                 for (var i = 0; i < data[0].length; i++) {
@@ -202,17 +203,17 @@
 
                 var metricFunc = null;
                 if (options["metric"] == "count")
-                    metricFunc = Util.count;
+                    metricFunc = Aggregate.count;
                 else if (options["metric"] == "min")
-                    metricFunc = Util.min;
+                    metricFunc = Aggregate.min;
                 else if (options["metric"] == "max")
-                    metricFunc = Util.max;
+                    metricFunc = Aggregate.max;
                 else if (options["metric"] == "sum")
-                    metricFunc = Util.sum;
+                    metricFunc = Aggregate.sum;
                 else if (options["metric"] == "avg")
-                    metricFunc = Util.avg;
+                    metricFunc = Aggregate.avg;
                 else if (options["metric"] == "median")
-                    metricFunc = Util.median;
+                    metricFunc = Aggregate.median;
 
                 if (metricFunc == null)
                 {
