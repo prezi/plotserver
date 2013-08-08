@@ -286,11 +286,6 @@
                 else {
                     drawPlot(data);
                 }
-
-                //drawPlot(data);
-                
-                drawOptions();
-                updateURL();
             }
 
             function drawNumbers(data) {
@@ -401,19 +396,6 @@
                 }
             }
 
-            function drawOptions() {
-                //document.getElementById("options").value = JSON.stringify(options, null, 4);
-            }
-
-            function updateURL() {
-                var parts = [];
-                for (var key in options)
-                    parts.push(key + "=" + encodeURIComponent(JSON.stringify(options[key])));
-                var url = baseURL + "?" + parts.join("&");
-                //url = encodeURI(url);
-                //document.getElementById("url").href = url;
-            }
-
             function save() {
                 $("#save").html("Saving...");
                 saveData(); // calls saveOptions()
@@ -466,8 +448,6 @@
                 else {
                     drawPlot(data);
                 }
-
-                drawOptions();
             }
 
             function setViewMode() {
