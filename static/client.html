@@ -186,7 +186,7 @@
 
                 var aggregate = {}; // aggregate => [[],[],[]...]
                 for (var i = 0; i < data[0].length; i++) {
-                    for (var j = 0; j < Util.length(data); j++) {
+                    for (var j = 0; j < Object.keys(data).length; j++) {
                         var val = data[j][i];
                         if (j == 0)
                             key = aggregateFunc(val)
@@ -380,7 +380,7 @@
                             if (type == "pieChart")
                                 xtype = "string";
                             dataTable.addColumn(xtype, "x");
-                            for (var j = 0; j < Util.length(data) - 1; j++) {
+                            for (var j = 0; j < Object.keys(data).length - 1; j++) {
                                 if (options.lines[j] === undefined)
                                     options.lines[j] = "Line " + (j + 1);
                                 if (options.colors[j] === undefined)
@@ -390,7 +390,7 @@
                             for (var i = 0; i < data[0].length; i++) {
                                 var row = [];
                                 var sum = 0;
-                                for (var j = 0; j < Util.length(data); j++) {
+                                for (var j = 0; j < Object.keys(data).length; j++) {
                                     val = data[j][i];
                                     if (j == 0) {
                                         if (typeof val == "number")

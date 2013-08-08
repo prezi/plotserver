@@ -169,7 +169,7 @@ Format =
         newData = [];
         for (var i = 0; i < data[0].length; i++) {
             var row = [];
-            for (var j = 0; j < Util.length(data); j++)
+            for (var j = 0; j < Object.keys(data).length; j++)
                 row.push(data[j][i]);
             newData.push(row);
         }
@@ -248,10 +248,10 @@ Model =
                     }
                 }
                 if (found) {
-                    for (var k = 1; k < Util.length(updateData); k++)
+                    for (var k = 1; k < Object.keys(updateData).length; k++)
                         data[k][j] = updateData[k][0];
                 } else {
-                    for (var k = 0; k < Util.length(updateData); k++)
+                    for (var k = 0; k < Object.keys(updateData).length; k++)
                         data[k].push(updateData[k][0]);
                 }
             }
