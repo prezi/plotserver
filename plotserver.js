@@ -107,9 +107,9 @@ HttpGet.getOptions = function(request, response) {
                 var js = "";
                 if (err) {
                     log.debug("Editing new file " + request.path + ".");
-                    js = functionName + "(\"NOT FOUND\");";
+                    js = functionName + "(null);";
                 } else {
-                    js = functionName + "(\"" + Base64.encode(fileContents) + "\");";
+                    js = functionName + "(" + fileContents + ");";
                     log.debug("Sending jsonified options file " + request.path + ".");
                 }
                 response.writeHead(200, {"Content-Type": "text/javascript"});

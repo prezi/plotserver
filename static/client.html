@@ -292,9 +292,9 @@
             }
 
             function onOptions(data) {
-                if (data == "NOT FOUND")
+                if (data == null)
                     return;
-                optionsText = Base64.decode(data);
+                optionsText = JSON.stringify(data, undefined, 2);
                 document.getElementById("options").value = optionsText;
                 onOptionsChanged();
             }
