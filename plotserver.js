@@ -14,17 +14,70 @@ var common = require("./static/common");
 // ===============================================
 //
 
-var HttpGet = {};
-
 httpNotFound = function(response) {
     response.writeHead(404, {"Content-Type": "text/text"});
     response.end("File not found.\n");
-}
+};
 
 httpInternalError = function(response) {
     response.writeHead(500, {"Content-Type": "text/text"});
     response.end("An internal error occured.\n");
-}
+};
+
+createFullPath = function(fullPath, callback) {
+    if (fullPath.indexOf("/") == -1) {
+        callback(null);
+        return;
+    }
+    var path = require("path");
+    var fs = require("fs");
+    var parts = path.dirname(path.normalize(fullPath)).split("/");
+    var working = "./";
+    var pathList = [];
+    var exists = null;
+    if (fs.exists)
+        exists = fs.exists;
+    else
+        exists = path.exists;
+    for(var i = 0, max = parts.length; i < max; i++) {
+        working = path.join(working, parts[i]);
+        pathList.push(working);
+    }
+    var recursePathList = function recursePathList(paths) {
+        if(0 === paths.length) {
+            callback(null);
+            return ;
+        }
+        var working = paths.shift();
+        try {
+            exists(working, function(exists) {
+                if(!exists) {
+                    try {
+                        fs.mkdir(working, 0755, function() {
+                            recursePathList(paths);
+                        });
+                    }
+                    catch(e) {
+                        callback(new Error("Failed to create path: " + working + " with " + e.toString()));
+                    }
+                }
+                else {
+                    recursePathList(paths);             
+                }
+            });
+        }
+        catch(e) {
+            callback(new Error("Invalid path specified: " + working));
+        }
+    }
+    
+    if(0 === pathList.length)
+        callback(new Error("Path list was empty"));
+    else
+        recursePathList(pathList);
+};
+
+var HttpGet = {};
 
 HttpGet.static = function(request, response) {
     fs.readFile(request.path, "utf8",
@@ -151,7 +204,7 @@ HttpGet.set = function(request, response) {
         return;
     }
     log.debug("Path: " + request.path);
-    Util.createFullPath(request.path, function(err) {
+    createFullPath(request.path, function(err) {
         if (err) {
             log.debug("Create path failed. Reason: " + err);
             var json = JSON.stringify("Error: Create path failed. Reason: " + err);
@@ -230,7 +283,7 @@ HttpPost.update = function(request, response) {
         return;
     }
     log.debug("Updating data at " + request.path + " with " + utils.inspect(updateData));
-    Util.createFullPath(request.path, function(err) {
+    createFullPath(request.path, function(err) {
         if (err) {
             log.debug("Create path failed. Reason: " + err);
             var json = JSON.stringify("Error: Create path failed. Reason: " + err);
@@ -277,7 +330,7 @@ HttpPost.set = function(request, response) {
     }
 
     log.debug("Path: " + request.path);
-    Util.createFullPath(request.path, function(err) {
+    createFullPath(request.path, function(err) {
         if (err) {
             log.debug("Create path failed. Reason: " + err);
             var json = JSON.stringify("Error: Create path failed. Reason: " + err);
@@ -304,7 +357,7 @@ HttpPost.set = function(request, response) {
 HttpPost.setOptions = function(request, response) {
     var path = request.path + ".options";
     log.debug("Path: " + path);
-    Util.createFullPath(path, function(err) {
+    createFullPath(path, function(err) {
         if (err) {
             log.debug("Create path failed. Reason: " + err);
             var json = JSON.stringify("Error: Create path failed. Reason: " + err);

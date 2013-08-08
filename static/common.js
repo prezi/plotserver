@@ -8,59 +8,6 @@
 //
 Util =
 {
-    createFullPath: function(fullPath, callback) {
-        if (fullPath.indexOf("/") == -1) {
-            callback(null);
-            return;
-        }
-        var path = require("path");
-        var fs = require("fs");
-        var parts = path.dirname(path.normalize(fullPath)).split("/");
-        var working = "./";
-        var pathList = [];
-        var exists = null;
-        if (fs.exists)
-            exists = fs.exists;
-        else
-            exists = path.exists;
-        for(var i = 0, max = parts.length; i < max; i++) {
-            working = path.join(working, parts[i]);
-            pathList.push(working);
-        }
-        var recursePathList = function recursePathList(paths) {
-            if(0 === paths.length) {
-                callback(null);
-                return ;
-            }
-            var working = paths.shift();
-            try {
-                exists(working, function(exists) {
-                    if(!exists) {
-                        try {
-                            fs.mkdir(working, 0755, function() {
-                                recursePathList(paths);
-                            });
-                        }
-                        catch(e) {
-                            callback(new Error("Failed to create path: " + working + " with " + e.toString()));
-                        }
-                    }
-                    else {
-                        recursePathList(paths);             
-                    }
-                });
-            }
-            catch(e) {
-                callback(new Error("Invalid path specified: " + working));
-            }
-        }
-        
-        if(0 === pathList.length)
-            callback(new Error("Path list was empty"));
-        else
-            recursePathList(pathList);
-    },
-
     toYearWeek: function(d) {
         // Copy date so don't modify original
         d = new Date(d);
