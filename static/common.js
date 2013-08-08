@@ -252,11 +252,6 @@ Model =
     }
 };
 
-String.prototype.endsWith = function(suffix)
-{
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-};
-
 try { global.Util = Util } catch(error) { }
 try { global.Model = Model } catch(error) { }
 try { global.Format = Format } catch(error) { }

@@ -86,7 +86,7 @@ var HttpServer = function(settings) {
     var _handleTrailingSlashes = function(request, response) {
         request.originalUrl = request.url;
         if (_settings.removeTrailingSlashes) {
-            if (request.url.endsWith("/"))
+            if (request.url[request.url.length - 1] == "/")
                 request.url = request.url.substring(0, request.url.length - 1);
         }
     };

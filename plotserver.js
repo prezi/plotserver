@@ -47,14 +47,14 @@ HttpGet.list = function(request, response) {
         html += "<meta http-equiv='Content-Type' content='text/html;charset=utf-8'></head>";
         html += "<body style='padding: 20px;'>";
         html += "<h1>Index of " + request.path.substring("public".length) + "</h1>";
-        if (!request.path.endsWith("/"))
+        if (request.path[request.path.length - 1] != "/")
             request.path += "/";
-        if (!request.originalUrl.endsWith("/"))
+        if (request.originalUrl[request.originalUrl.length - 1] != "/")
             request.originalUrl += "/";
         files.sort();
         for (var i in files) {
             var file = files[i];
-            if (file.endsWith(".options"))
+            if (file.match(/.options$/) != null)
                 continue;
             stat = fs.statSync(request.path + file);
             if (stat != undefined && stat.isDirectory())
