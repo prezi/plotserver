@@ -245,9 +245,9 @@ HttpPost.update = function(request, response) {
                 if (err) {
                     newFileContents = Format.serialize(updateData);
                 } else {
-                    var oldData = Format.parse(fileContents);
-                    var newData = Model.patch(oldData, updateData);
-                    newFileContents = Format.serialize(newData);
+                    var data = Format.parse(fileContents);
+                    Model.patch(data, updateData);
+                    newFileContents = Format.serialize(data);
                 }
                 fs.writeFile(request.path, newFileContents, function(err) {
                     if (err) {

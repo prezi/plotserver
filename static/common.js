@@ -82,49 +82,6 @@ Util =
             recursePathList(pathList);
     },
 
-    clone: function(item) {
-        if (!item) { return item; } // null, undefined values check
-        var types = [ Number, String, Boolean ], 
-            result;
-        // normalizing primitives if someone did new String('aaa'), or new Number('444');
-        types.forEach(function(type) {
-            if (item instanceof type) {
-                result = type( item );
-            }
-        });
-        if (typeof result == "undefined") {
-            if (Object.prototype.toString.call( item ) === "[object Array]") {
-                result = [];
-                item.forEach(function(child, index, array) { 
-                    result[index] = Util.clone( child );
-                });
-            } else if (typeof item == "object") {
-                // testign that this is DOM
-                if (item.nodeType && typeof item.cloneNode == "function") {
-                    var result = item.cloneNode( true );    
-                } else if (!item.prototype) { // check that this is a literal
-                    // it is an object literal
-                    result = {};
-                    for (var i in item) {
-                        result[i] = Util.clone( item[i] );
-                    }
-                } else {
-                    // depending what you would like here,
-                    // just keep the reference, or create new object
-                    if (false && item.constructor) {
-                        // would not advice to do that, reason? Read below
-                        result = new item.constructor();
-                    } else {
-                        result = item;
-                    }
-                }
-            } else {
-                result = item;
-            }
-        }
-        return result;
-    },
-
     toYearWeek: function(d) {
         // Copy date so don't modify original
         d = new Date(d);
@@ -293,28 +250,26 @@ Model =
         return true;
     },
 
-    patch: function(oldData, updateData) {
-        var newData = Util.clone(oldData);
+    patch: function(data, updateData) {
         try {
             for (var i = 0; i < updateData[0].length; i++) {
                 var key = updateData[0][i];
                 var found = false;
-                for (var j = 0; j < newData[0].length; j++) {
-                    if (key == newData[0][j]) {
+                for (var j = 0; j < data[0].length; j++) {
+                    if (key == data[0][j]) {
                         found = true;
                         break;
                     }
                 }
                 if (found) {
                     for (var k = 1; k < Util.length(updateData); k++)
-                        newData[k][j] = updateData[k][0];
+                        data[k][j] = updateData[k][0];
                 } else {
                     for (var k = 0; k < Util.length(updateData); k++)
-                        newData[k].push(updateData[k][0]);
+                        data[k].push(updateData[k][0]);
                 }
             }
         } catch(err) { }
-        return newData;
     }
 };
 
