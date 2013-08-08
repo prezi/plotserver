@@ -65,28 +65,6 @@
                 return vars;
             }
 
-            function saveImage() {
-                var chartContainer;
-                if (options["chart"] == "column") {
-                    chartContainer = document.getElementById("columnChart");
-                } else if (options["chart"] == "area") {
-                    chartContainer = document.getElementById("areaChart");
-                } else if (options["chart"] == "pie") {
-                    chartContainer = document.getElementById("pieChart");
-                } else {
-                    chartContainer = document.getElementById("lineChart");
-                }
-                var svg = $(chartContainer).find('svg').parent().html();
-                var doc = chartContainer.ownerDocument;
-                var canvas = doc.createElement('canvas');
-                canvas.setAttribute('style', 'position: absolute; ' + '');
-                doc.body.appendChild(canvas);
-                canvg(canvas, svg);
-                var imgData = canvas.toDataURL("image/png");
-                canvas.parentNode.removeChild(canvas);
-                window.location = imgData;
-            }
-
             function init() {
                 baseURL = location.protocol + '//' + location.host + location.pathname;
                 document.title = location.pathname.substring(1) + " - Plotserver";
@@ -523,7 +501,6 @@
                 <div id="areaChart"></div>
                 <div id="pieChart"></div>
             </div>
-            <button id="viewAsImage" onClick="saveImage()">View as image</button>
             <button id="editView" onClick="editMode()">Edit plot</button>
         </div>
         
