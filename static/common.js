@@ -8,10 +8,6 @@
 //
 Util =
 {
-    trim: function(str) {
-        return str.replace(/^\s+|\s+$/g,'');
-    },
-
     length: function(obj) {
         var size = 0, key;
         for (key in obj)
@@ -163,7 +159,7 @@ Format =
             for (var i = 0; i < values.length; i++) {
                 if (!(i in data))
                     data[i] = []
-                data[i].push(Util.trim(values[i]));
+                data[i].push(values[i].trim());
             }
         });
         return data;
