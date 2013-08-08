@@ -8,16 +8,6 @@
 //
 Util =
 {
-    keys: function(obj) {
-        var keys = [];
-        for(var i in obj)
-        {
-            if (obj.hasOwnProperty(i))
-                keys.push(i);
-        }
-        return keys;
-    },
-
     trim: function(str) {
         return str.replace(/^\s+|\s+$/g,'');
     },

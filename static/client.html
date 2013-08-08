@@ -219,7 +219,7 @@
                     return;
                 }
                 
-                var sorted_keys = Util.keys(aggregate).sort()
+                var sorted_keys = Object.keys(aggregate).sort()
                 rows = []
                 for (var i = 0; i < sorted_keys.length; i++) {
                     var key = sorted_keys[i];
