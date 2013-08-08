@@ -8,13 +8,6 @@
 //
 Util =
 {
-    length: function(obj) {
-        var size = 0, key;
-        for (key in obj)
-            if (obj.hasOwnProperty(key)) size++;
-        return size;
-    },
-
     createFullPath: function(fullPath, callback) {
         if (fullPath.indexOf("/") == -1) {
             callback(null);
