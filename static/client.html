@@ -48,19 +48,6 @@
                 document.getElementsByTagName('head')[0].appendChild(s);
             }
 
-            function date(str)
-            {
-                var min = new Date(Date.parse(str));
-                try {
-                    for (var i = 0; i < lastData[0].length; i++) {
-                        val = lastData[0][i];
-                        var valDate = new Date(Date.parse(val));
-                        if (valDate >= min)
-                            return i;
-                    }
-                } catch(error) { return 0; }
-            }
-
             function getUrlParams()
             {
                 var vars = {};
@@ -447,12 +434,6 @@
                 var url = baseURL + "?" + parts.join("&");
                 //url = encodeURI(url);
                 //document.getElementById("url").href = url;
-            }
-
-            function shorten() {
-                $.getJSON(baseURL + "?shorten&url=" + encodeURIComponent(document.getElementById("url").href) + "&jsonp=?", function(data) {
-                    document.getElementById("url").href = data;
-                });
             }
 
             function save() {
