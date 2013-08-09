@@ -1,23 +1,8 @@
 
 var options = {fontName: "georgia", lineWidth: 2, pointSize: 3, colors: ["blue"], curveType: "function", lines: ["Some data"], title: "Some title"};
-var colors = ["blue", "green", "red", "purple", "black", "orange"];
-var urlParams = {};
-var lastData;
-var lastAggregateData;
+var lastData, lastAggregateData;
 var charts = {};
 var viewMode = false;
-var chartConstructors = {
-    "lineChart":   function(e) { return new google.visualization.LineChart(e)   },
-    "columnChart": function(e) { return new google.visualization.ColumnChart(e) },
-    "areaChart":   function(e) { return new google.visualization.AreaChart(e)   },
-    "pieChart":    function(e) { return new google.visualization.PieChart(e)    }
-};
-var chartTypes = {
-    "lineChart":   ["number", "date", "datetime", "string"],
-    "columnChart": ["number", "date", "datetime", "string"],
-    "areaChart":   ["number", "date", "datetime", "string"],
-    "pieChart":    ["string"]
-};
 
 function baseURL() {
 	return location.protocol + '//' + location.host + location.pathname;
@@ -49,29 +34,39 @@ function gaSSDSLoad (acct) {
 	document.getElementsByTagName('head')[0].appendChild(s);
 }
 
-function getUrlParams() {
-    var vars = {};
-    var parts = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for (var i = 0; i < parts.length; i++) {
-        if (parts[i].indexOf("=") >= 0) {
-            kv = parts[i].split('=');
-            vars[kv[0]] = decodeURIComponent(kv[1]);
-        } else {
-            if (parts[i].indexOf("http://") == 0 || parts[i].indexOf("https://") == 0)
-                continue;
-            vars[parts[i]] = true;
-        }
-    }
-    return vars;
+function urlParams() {
+	if (typeof urlParamsReturnValue == 'undefined')
+	{
+	    var vars = {};
+	    var parts = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+	    for (var i = 0; i < parts.length; i++) {
+	        if (parts[i].indexOf("=") >= 0) {
+	            kv = parts[i].split('=');
+	            vars[kv[0]] = decodeURIComponent(kv[1]);
+	        } else {
+	            if (parts[i].indexOf("http://") == 0 || parts[i].indexOf("https://") == 0)
+	                continue;
+	            vars[parts[i]] = true;
+	        }
+	    }
+	    urlParamsReturnValue = vars;
+	}
+	return urlParamsReturnValue;
 }
 
 function init() {
     document.title = location.pathname.substring(1) + " - Plotserver";
 
+	var chartConstructors = {
+	    "lineChart":   function(e) { return new google.visualization.LineChart(e)   },
+	    "columnChart": function(e) { return new google.visualization.ColumnChart(e) },
+	    "areaChart":   function(e) { return new google.visualization.AreaChart(e)   },
+	    "pieChart":    function(e) { return new google.visualization.PieChart(e)    }
+	};
+
     for (var type in chartConstructors)
         charts[type] = chartConstructors[type](document.getElementById(type));
 
-    urlParams = getUrlParams();
     setOptions();
     get();
     getOptions();
@@ -80,19 +75,15 @@ function init() {
         gaSSDSLoad(Config.googleAnalyticsTrackingCode);
 }
 
-function onResize() {
-    draw(lastData);
-}
-
-function editMode() {
-    if (document.getElementById("editView").innerHTML == "Edit plot") {
+function toggleEditMode() {
+    if ($("#editView").html() == "Edit plot") {
         $("#editContainer").show();
-        draw(lastData);
-        document.getElementById("editView").innerHTML = "Back to plot only";
+        $("#editView").html("Back to plot only");
     } else {
         $("#editContainer").hide();
-        draw(lastData);
-        document.getElementById("editView").innerHTML = "Edit plot";                }
+        $("#editView").html("Edit plot")
+	}
+	draw(lastData);
 }
 
 function aggregate(data) {
@@ -135,9 +126,7 @@ function aggregate(data) {
         metricFunc = Aggregate.median;
 
     if (metricFunc == null)
-    {
         return;
-    }
     
     var sorted_keys = Object.keys(aggregate).sort()
     rows = []
@@ -179,7 +168,9 @@ function onOptionsChanged() {
         else {
             drawPlot(lastData);
         }
-    } catch (error) { console.log(error) }
+    } catch (error) {
+    	console.log(error)
+    }
 }
 
 function setOptions() {
@@ -201,7 +192,7 @@ function poll() {
 
 function onData(data) {
     if (data == "NOT FOUND") {
-        editMode();
+        toggleEditMode();
     } else {
         draw(data);
         lastData = data;
@@ -262,7 +253,14 @@ function draw(data) {
 }
 
 function drawPlot(data) {
-    for (var type in chartConstructors)
+	var chartTypes = {
+	    "lineChart":   ["number", "date", "datetime", "string"],
+	    "columnChart": ["number", "date", "datetime", "string"],
+	    "areaChart":   ["number", "date", "datetime", "string"],
+	    "pieChart":    ["string"]
+	};
+
+    for (var type in chartTypes)
         document.getElementById(type).style.display = "none";
 
     try {
@@ -273,13 +271,13 @@ function drawPlot(data) {
 
     if (options["chart"] == "area")
         options["isStacked"] = true;
-    if (urlParams.hasOwnProperty("ratio")) {
+    if (urlParams().hasOwnProperty("ratio")) {
         if (!options.hasOwnProperty("vAxis"))
             options["vAxis"] = {};
         options["vAxis"].format = "# '%'";
     }
-    if (urlParams.hasOwnProperty("title"))
-        options["title"] = urlParams["title"];
+    if (urlParams().hasOwnProperty("title"))
+        options["title"] = urlParams()["title"];
 
     for (var type in chartTypes) {
         var xtypes = chartTypes[type];
@@ -291,7 +289,7 @@ function drawPlot(data) {
                     if (options.lines[j] === undefined)
                         options.lines[j] = "Line " + (j + 1);
                     if (options.colors[j] === undefined)
-                        options.colors[j] = colors[j];
+                        options.colors[j] = ["blue", "green", "red", "purple", "black", "orange"][j];
                     dataTable.addColumn("number", options.lines[j]);
                 }
                 for (var i = 0; i < data[0].length; i++) {
@@ -312,19 +310,19 @@ function drawPlot(data) {
                                 val = new Date(Date.parse(val));
                             else {
                                 val = parseFloat(val);
-                                if (urlParams.hasOwnProperty("ratio"))
+                                if (urlParams().hasOwnProperty("ratio"))
                                     sum += val;
                             }
                         } else {
                             val = parseFloat(val);
-                            if (urlParams.hasOwnProperty("ratio"))
+                            if (urlParams().hasOwnProperty("ratio"))
                                 sum += val;
                         }
                         if (type == "pieChart" && j == 0)
                             val = "" + data[j][i];
                         row.push(val);
                     }
-                    if (urlParams.hasOwnProperty("ratio")) {
+                    if (urlParams().hasOwnProperty("ratio")) {
                         for (var j = 1; j < row.length; j++) {
                             row[j] /= sum;
                             row[j] *= 100;
@@ -382,7 +380,7 @@ function onNumbersChanged(fileContents) {
 }
 
 function setViewMode() {
-    if (urlParams.hasOwnProperty("view")) {
+    if (urlParams().hasOwnProperty("view")) {
         viewMode = true;
         $("#viewAsImage").hide();
         $("#editView").hide();
@@ -393,9 +391,7 @@ function setViewMode() {
         $("#plotContainer").css("margin", "0");
         $("#plotContainer").css("padding", "0");
         $("#plotContainer").css("border", "0");
-        if (urlParams.hasOwnProperty("link")) {
+        if (urlParams().hasOwnProperty("link"))
             $("#viewContainer").append("<a class='downloadLink' target='top_' href='" + baseURL() + "?download'>data</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a class='downloadLink' target='top_' href='" + baseURL() + "'>view</a>");
-            
-        }
     }
 }

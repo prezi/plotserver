@@ -18,7 +18,7 @@
             google.setOnLoadCallback(init);
         </script>
     </head>
-    <body onResize="onResize()">
+    <body onResize="draw(lastData)">
         <div id="viewContainer">
             <div id="plotContainer">
                 <div id="lineChart"></div>
@@ -26,7 +26,7 @@
                 <div id="areaChart"></div>
                 <div id="pieChart"></div>
             </div>
-            <button id="editView" onClick="editMode()">Edit plot</button>
+            <button id="editView" onClick="toggleEditMode()">Edit plot</button>
         </div>
         
         <div id="editContainer">
