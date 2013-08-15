@@ -69,8 +69,14 @@ Format =
     },
 
     serialize: function(data) {
-        try {      return Format.serializeRowColArray(Format.floatSortRowColArrayAsc(Format.toRowColArray(data))); }
-        catch(e) { return Format.serializeRowColArray(Format.sortRowColArrayAsc(Format.toRowColArray(data))); }
+        try {
+            if (data[0][0].indexOf("-") != -1)
+                throw "it's a date, not a float";
+            else
+                return Format.serializeRowColArray(Format.floatSortRowColArrayAsc(Format.toRowColArray(data)));
+        } catch(e) {
+            return Format.serializeRowColArray(Format.sortRowColArrayAsc(Format.toRowColArray(data)));
+        }
     }
 };
 
