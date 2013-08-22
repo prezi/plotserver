@@ -80,14 +80,14 @@ createFullPath = function(fullPath, callback) {
 var HttpGet = {};
 
 HttpGet.static = function(request, response) {
-    fs.readFile(request.path, "utf8",
+    fs.readFile(request.path,
     function (err, fileContents) {
         if (err)
             return httpNotFound(response);
         var type = mime.lookup(request.path);
         response.writeHead(200, {"Content-Type": type});
         response.end(fileContents);
-        log.debug("Sending static file " + request.path + ".");
+        log.debug("Sending static file " + request.path + " of type " + type + ".");
     });
 };
 
