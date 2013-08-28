@@ -391,7 +391,13 @@ function setViewMode() {
         $("#plotContainer").css("margin", "0");
         $("#plotContainer").css("padding", "0");
         $("#plotContainer").css("border", "0");
-        if (urlParams().hasOwnProperty("link"))
+        if (urlParams().hasOwnProperty("link")) {
             $("#viewContainer").append("<a class='downloadLink' target='top_' href='" + baseURL() + "?download'>data</a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a class='downloadLink' target='top_' href='" + baseURL() + "'>view</a>");
+        }
+        if (urlParams().hasOwnProperty("clickable")) {
+            $("#viewContainer").click(function () {
+                window.open(baseURL());
+            });
+        }
     }
 }
