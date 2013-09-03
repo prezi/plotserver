@@ -162,7 +162,7 @@ function onOptionsChanged() {
         options = tryObj;
         optionsText = document.getElementById("options").value;
         if (options["group"]) {
-            aggregate(lastData);
+            lastAggregateData = aggregate(lastData);
             drawPlot(lastAggregateData);
         }
         else {
@@ -244,7 +244,7 @@ function draw(data) {
     document.getElementById("numbers").innerHTML = Format.serialize(data);
 
     if (options["group"]) {
-        aggregate(data);
+        lastAggregateData = aggregate(data);
         drawPlot(lastAggregateData);
     }
     else {
