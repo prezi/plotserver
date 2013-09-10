@@ -117,17 +117,14 @@ module.exports.endpoints.dailyLogFile = function(settings) {
 module.exports.endpoints.scribe = function(settings) {
     var _settings = settings;
     var _client = new scribe(settings["host"], settings["port"], { autoReconnect:true });
+        _client.open( function() {} );
     
     return new function() {
         this.log = function(date, level, message) {
             if (Logger.levelMap[level] <= Logger.levelMap[_settings["level"]]) {
                 var line = date.format("yyyy-mm-dd HH:MM:ss") + " " + level.toUpperCase() + " " + message + "\n";
-                _client.open( function(err) {
-                    if (err)
-                        return;
-                    _client.send("plotserver", line);
-                    _client.close();
-                });
+                _client.send("plotserver", line);
+                _client.close();
             }
         }
     }
