@@ -124,7 +124,6 @@ module.exports.endpoints.scribe = function(settings) {
             if (Logger.levelMap[level] <= Logger.levelMap[_settings["level"]]) {
                 var line = date.format("yyyy-mm-dd HH:MM:ss") + " " + level.toUpperCase() + " " + message + "\n";
                 _client.send(_settings["category"], line);
-                _client.close();
             }
         }
     }
