@@ -424,6 +424,9 @@ if (process.argv.length != 3) {
 var configFile = process.argv[2];
 var config = require("./" + configFile);
 
+if ("godAuth" in config.settings)
+    var secrets = require("./config/secrets");
+
 if (config.settings.log.console)
     log.addEndpoint(logger.endpoints.console(config.settings.log.console));
 if (config.settings.log.dailyLogFile)
@@ -431,7 +434,24 @@ if (config.settings.log.dailyLogFile)
 if (config.settings.log.scribe)
     log.addEndpoint(logger.endpoints.scribe(config.settings.log.scribe));
 
+if ("https" in config.settings && config.settings.https.redirectHttp) {
+    // Redirect to https
+    console.log('Setting up HTTP to HTTPS redirect');
+    http.createServer(function (req, res) {
+        res.writeHead(301, {'Location': 'https://plot.prezi.com'});
+        res.end("<a href='http://plot.prezi.com'>https://plot.prezi.com</a>");
+    }).listen(80);
+    port = 443;
+}
+
 var serverSettings = {"removeTrailingSlashes": true, "catchExceptions": true, "port": 9090, "logger": log};
+if ("godAuth" in config.settings) {
+    serverSettings["godAuth"] = config.settings.godAuth;
+    serverSettings["godAuth"]["secret"] = secrets.godAuthSecret;
+}
+if ("https" in config.settings && "options" in config.settings.https)
+    serverSettings["httpsOptions"] = config.settings.https.options;
+
 var server = new httpserver.create(serverSettings);
 // rewrite rules
 server.addUrlRewrite(  new RegExp("^$") /* empty string */,    function(path) { return "/static/index.html" });

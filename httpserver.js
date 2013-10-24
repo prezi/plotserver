@@ -1,5 +1,6 @@
 var http = require("http");
 var url = require("url");
+var godauth = require("prezi-godauth");
 
 //
 // ===============================================
@@ -67,6 +68,17 @@ var HttpServer = function(settings) {
     };
 
     var _handleRequest = function(request, response) {
+        if ("godAuth" in _settings) {
+            var authenticator = godauth.create(_settings.godAuth.secret, _settings.godAuth.url);
+            authSuccess = authenticator.authenticateRequest(request, response);
+            console.log(authSuccess);
+            if (!authSuccess) {
+                console.log("GodAuth Authentication failed");
+                return;
+            }
+            console.log("GodAuth authentication succeeded");
+        }
+
         _handleTrailingSlashes(request, response);
         _handleUrlRewrites(request, response);
 

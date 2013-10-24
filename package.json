@@ -5,7 +5,8 @@
   "author": "Marton Trencseni <mtrencseni@gmail.com> (https://github.com/mtrencseni)",
   "dependencies": {
     "mime": "1.2.x",
-    "scribe": ">= 0.0.8"
+    "scribe": ">= 0.0.8",
+    "prezi-godauth": "*"
   },
   "engine": "node >= 0.8.12",
   "scripts": {"start": "node plotserver.js config/test.js"}

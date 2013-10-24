@@ -3,5 +3,8 @@ settings.log = {};
 settings.log.console =      {"level": "info"};
 settings.log.dailyLogFile = {"level": "info", "directory": "/var/log/plotserver", "file": "plotserver"};
 settings.log.scribe =       {"level": "info", "host": "localhost", "port": 1463, "category": "plotserver"};
-
+settings.https = {}
+settings.https.options =    { "key": "/etc/ssl/private/*.prezi.com.key", "cert": "/etc/ssl/private/*.prezi.com.crt" };
+settings.https.redirectHttp = true;
+settings.godAuth =          {"url": "https://plot.prezi.com/"};
 module.exports.settings = settings;
