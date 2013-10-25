@@ -5,7 +5,7 @@ var utils = require("util");
 var logger = require("./logger");
 var httpserver = require("./httpserver");
 var common = require("./static/common");
-
+var http = require("http");
 //
 // ===============================================
 //
