@@ -434,6 +434,7 @@ if (config.settings.log.dailyLogFile)
 if (config.settings.log.scribe)
     log.addEndpoint(logger.endpoints.scribe(config.settings.log.scribe));
 
+var port = 80;
 if ("https" in config.settings && config.settings.https.redirectHttp) {
     // Redirect to https
     console.log('Setting up HTTP to HTTPS redirect');
@@ -443,15 +444,25 @@ if ("https" in config.settings && config.settings.https.redirectHttp) {
     }).listen(80);
     port = 443;
 }
+if ("port" in config.settings)
+    port = config.settings.port;
 
-var serverSettings = {"removeTrailingSlashes": true, "catchExceptions": true, "port": 9090, "logger": log};
+var serverSettings = {
+    "removeTrailingSlashes": true,
+    "catchExceptions": true,
+    "port": port,
+    "logger": log,
+    "url" : config.settings.url
+};
+
+if ("https" in config.settings && "options" in config.settings.https)
+    serverSettings["httpsOptions"] = config.settings.https.options;
 if ("godAuth" in config.settings) {
     serverSettings["godAuth"] = config.settings.godAuth;
     serverSettings["godAuth"]["secret"] = secrets.godAuthSecret;
 }
-if ("https" in config.settings && "options" in config.settings.https)
-    serverSettings["httpsOptions"] = config.settings.https.options;
 
+console.log('Launching HTTP(S) server');
 var server = new httpserver.create(serverSettings);
 // rewrite rules
 server.addUrlRewrite(  new RegExp("^$") /* empty string */,    function(path) { return "/static/index.html" });

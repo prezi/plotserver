@@ -1,6 +1,8 @@
-var http = require("http");
-var url = require("url");
-var godauth = require("prezi-godauth");
+var fs = require("fs"),
+    url = require("url"),
+    http = require("http"),
+    https = require("https"),
+    godauth = require("prezi-godauth");
 
 //
 // ===============================================
@@ -54,17 +56,35 @@ var HttpServer = function(settings) {
 
     // private:
     var _createServer = function() {
-        http.createServer(function(request, response) {
-            if (_settings.catchExceptions) {
-                try {
+        if (_settings.port == 443) {
+            var options = {
+                key: fs.readFileSync(_settings.httpsOptions.key),
+                cert: fs.readFileSync(_settings.httpsOptions.cert)
+            };
+            https.createServer(options, function(request, response) {
+                if (_settings.catchExceptions) {
+                    try {
+                        _handleRequest(request, response);
+                    } catch(err) {
+                        log.error(err);
+                    }
+                } else {
                     _handleRequest(request, response);
-                } catch(err) {
-                    log.error(err);
                 }
-            } else {
-                _handleRequest(request, response);
-            }
-        }).listen(_settings.port);
+            }).listen(_settings.port);
+        } else {
+            http.createServer(function(request, response) {
+                if (_settings.catchExceptions) {
+                    try {
+                        _handleRequest(request, response);
+                    } catch(err) {
+                        log.error(err);
+                    }
+                } else {
+                    _handleRequest(request, response);
+                }
+            }).listen(_settings.port);
+        }
     };
 
     var _handleRequest = function(request, response) {
