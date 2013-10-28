@@ -442,7 +442,7 @@ if ("https" in config.settings && config.settings.https.redirectHttp) {
         res.writeHead(301, {'Location': config.settings.urlBase});
         res.end("<a href='" + config.settings.urlBase + "'>" + config.settings.urlBase + "</a>");
     }).listen(config.settings.httpPort);
-    port = config.settings.httpss.port;
+    port = config.settings.https.port;
 }
 
 var serverSettings = {
