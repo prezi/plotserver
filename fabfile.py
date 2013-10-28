@@ -4,12 +4,12 @@ from fabric.api import env, local, run, cd, put, path
 from fabric.decorators import runs_once
 
 
-APP_DIR = "/opt/prezi/plotserver"
+APP_DIR = "/usr/local/plotserver"
 
 env.forward_agent = True
 env.user = "publisher"
 
-env.roledefs = {"oam3": ["oam3.us.prezi.private"], "stage": [], "local": []}
+env.roledefs = {"plot": ["plot.prezi.com"], "stage": [], "local": []}
 env.abort_on_prompts = True
 
 def _gitpull():
