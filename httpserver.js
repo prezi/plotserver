@@ -87,16 +87,45 @@ var HttpServer = function(settings) {
         }
     };
 
+    var _getHTTPAuthCredentials = function(request) {
+        // Credits: http://stackoverflow.com/questions/5951552/basic-http-authentication-in-node-js
+
+        var header=request.headers['authorization']||'',        // get the header
+            token=header.split(/\s+/).pop()||'';            // and the encoded auth token
+            if (token != ''){    
+                auth=new Buffer(token, 'base64').toString(),    // convert from base64
+                parts=auth.split(/:/),                          // split on colon
+                username=parts[0],
+                password=parts[1];
+                return { 'username': username, 'password': password };
+            } else {
+                return null;
+            }
+    }
+
+    var _overrideGodAuthWithCredentials = function(request){
+        creds = _getHTTPAuthCredentials(request);
+        if (creds === null) {
+            return false;
+        } else {
+            return (creds.username == _settings.godAuth.bypassUsername && creds.password == _settings.godAuth.bypassPassword); 
+        }
+    }
+
     var _handleRequest = function(request, response) {
         if ("godAuth" in _settings) {
-            var authenticator = godauth.create(_settings.godAuth.secret, _settings.godAuth.url);
-            authSuccess = authenticator.authenticateRequest(request, response);
-            console.log(authSuccess);
-            if (!authSuccess) {
-                console.log("GodAuth Authentication failed");
-                return;
+            if (!_overrideGodAuthWithCredentials(request)) {
+                var authenticator = godauth.create(_settings.godAuth.secret, _settings.godAuth.url);
+                authSuccess = authenticator.authenticateRequest(request, response);
+                console.log(authSuccess);
+                if (!authSuccess) {
+                    console.log("GodAuth Authentication failed");
+                    return;
+                }
+                console.log("GodAuth authentication succeeded");
+            } else {
+                console.log("Using HTTP Authentication instead of GodAuth");
             }
-            console.log("GodAuth authentication succeeded");
         }
 
         _handleTrailingSlashes(request, response);

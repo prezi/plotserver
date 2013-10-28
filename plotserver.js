@@ -434,18 +434,16 @@ if (config.settings.log.dailyLogFile)
 if (config.settings.log.scribe)
     log.addEndpoint(logger.endpoints.scribe(config.settings.log.scribe));
 
-var port = 80;
+var port = config.settings.httpPort;
 if ("https" in config.settings && config.settings.https.redirectHttp) {
     // Redirect to https
     console.log('Setting up HTTP to HTTPS redirect');
     http.createServer(function (req, res) {
-        res.writeHead(301, {'Location': 'https://plot.prezi.com'});
-        res.end("<a href='http://plot.prezi.com'>https://plot.prezi.com</a>");
-    }).listen(80);
-    port = 443;
+        res.writeHead(301, {'Location': config.settings.urlBase});
+        res.end("<a href='" + config.settings.urlBase + "'>" + config.settings.urlBase + "</a>");
+    }).listen(config.settings.httpPort);
+    port = config.settings.httpss.port;
 }
-if ("port" in config.settings)
-    port = config.settings.port;
 
 var serverSettings = {
     "removeTrailingSlashes": true,
@@ -455,14 +453,18 @@ var serverSettings = {
     "url" : config.settings.url
 };
 
-if ("https" in config.settings && "options" in config.settings.https)
-    serverSettings["httpsOptions"] = config.settings.https.options;
-if ("godAuth" in config.settings) {
-    serverSettings["godAuth"] = config.settings.godAuth;
-    serverSettings["godAuth"]["secret"] = secrets.godAuthSecret;
+if ("https" in config.settings && "options" in config.settings.https){
+    serverSettings.httpsOptions = config.settings.https.options;
 }
 
-console.log('Launching HTTP(S) server');
+if ("godAuth" in config.settings) {
+    serverSettings.godAuth = config.settings.godAuth;
+    serverSettings.godAuth.secret = secrets.godAuthSecret;
+    serverSettings.godAuth.bypassUsername = secrets.godAuthBypassUsername;
+    serverSettings.godAuth.bypassPassword = secrets.godAuthBypassPassword;
+}
+
+console.log('Launching HTTP(S) server on port ' + port);
 var server = new httpserver.create(serverSettings);
 // rewrite rules
 server.addUrlRewrite(  new RegExp("^$") /* empty string */,    function(path) { return "/static/index.html" });
