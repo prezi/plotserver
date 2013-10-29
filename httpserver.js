@@ -90,26 +90,25 @@ var HttpServer = function(settings) {
     var _getHTTPAuthCredentials = function(request) {
         // Credits: http://stackoverflow.com/questions/5951552/basic-http-authentication-in-node-js
 
-        var header=request.headers['authorization']||'',        // get the header
-            token=header.split(/\s+/).pop()||'';            // and the encoded auth token
-            if (token != ''){    
-                auth=new Buffer(token, 'base64').toString(),    // convert from base64
-                parts=auth.split(/:/),                          // split on colon
-                username=parts[0],
-                password=parts[1];
+        var header = request.headers['authorization']||'',        // get the header
+            token = header.split(/\s+/).pop()||'';                // and the encoded auth token
+            if (token != '') {
+                auth = new Buffer(token, 'base64').toString(),    // convert from base64
+                parts = auth.split(/:/),                          // split on colon
+                username = parts[0],
+                password = parts[1];
                 return { 'username': username, 'password': password };
             } else {
                 return null;
             }
     }
 
-    var _overrideGodAuthWithCredentials = function(request){
+    var _overrideGodAuthWithCredentials = function(request) {
         creds = _getHTTPAuthCredentials(request);
-        if (creds === null) {
+        if (creds === null)
             return false;
-        } else {
-            return (creds.username == _settings.godAuth.bypassUsername && creds.password == _settings.godAuth.bypassPassword); 
-        }
+        else
+            return (creds.username == _settings.godAuth.bypassUsername && creds.password == _settings.godAuth.bypassPassword);
     }
 
     var _handleRequest = function(request, response) {

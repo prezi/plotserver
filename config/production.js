@@ -13,8 +13,6 @@ settings.https.options = { "key": "/etc/ssl/private/*.prezi.com.key", "cert": "/
 settings.https.port = 443;
 settings.https.redirectHttp = true;
 
-settings.godAuth = { 
-    "url": settings.urlBase
-};
+settings.godAuth = { "url": settings.urlBase };
 
 module.exports.settings = settings;
