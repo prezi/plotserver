@@ -408,8 +408,9 @@ function logUsername(request) {
 }
 
 function dropToUser(username) {
-    var uid = posix.getpwnam(username).uid;
-    posix.setuid(uid);
+    var pwnam = posix.getpwnam(username);
+    posix.setuid(pwnam.uid);
+    posix.setgid(pwnam.gid);
 }
 
 //
@@ -473,9 +474,6 @@ if ("godAuth" in config.settings) {
 console.log('Launching HTTP(S) server on port ' + port);
 var server = new httpserver.create(serverSettings);
 
-if ("dropToUser" in config.settings)
-    dropToUser(config.settings.dropToUser);
-
 // rewrite rules
 server.addUrlRewrite(  new RegExp("^$") /* empty string */,    function(path) { return "/static/index.html" });
 server.addUrlRewrite(  new RegExp("^/static/.+"),              function(path) { return path; });
@@ -499,3 +497,6 @@ server.addGetLogger(logUsername);
 server.addPostLogger(logUsername);
 // run
 server.run();
+
+if ("dropToUser" in config.settings)
+    dropToUser(config.settings.dropToUser);
