@@ -57,11 +57,7 @@ var HttpServer = function(settings) {
     // private:
     var _createServer = function() {
         if (_settings.port == 443) {
-            var options = {
-                key: fs.readFileSync(_settings.httpsOptions.key),
-                cert: fs.readFileSync(_settings.httpsOptions.cert)
-            };
-            https.createServer(options, function(request, response) {
+            https.createServer(_options, function(request, response) {
                 if (_settings.catchExceptions) {
                     try {
                         _handleRequest(request, response);
@@ -209,6 +205,13 @@ var HttpServer = function(settings) {
     var _defaultPostHandler = function(request, response) {};
     var _getLoggers = [];
     var _postLoggers = [];
+
+    if (_settings.port == 443) {
+        var _options = {
+            key: fs.readFileSync(_settings.httpsOptions.key),
+            cert: fs.readFileSync(_settings.httpsOptions.cert)
+        };
+    }
 };
 
 module.exports.create = function(settings) {
