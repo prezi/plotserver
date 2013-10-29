@@ -15,4 +15,6 @@ settings.https.redirectHttp = true;
 
 settings.godAuth = { "url": settings.urlBase };
 
+settings.dropToUser = "publisher";
+
 module.exports.settings = settings;
