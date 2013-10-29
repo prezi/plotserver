@@ -409,8 +409,8 @@ function logUsername(request) {
 
 function dropToUser(username) {
     var pwnam = posix.getpwnam(username);
-    posix.setuid(pwnam.uid);
     posix.setgid(pwnam.gid);
+    posix.setuid(pwnam.uid);
 }
 
 //
