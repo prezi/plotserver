@@ -110,7 +110,7 @@ var HttpServer = function(settings) {
     var _handleRequest = function(request, response) {
         if ("godAuth" in _settings) {
             if (!_overrideGodAuthWithCredentials(request)) {
-                var authenticator = godauth.create(_settings.godAuth.secret, _settings.godAuth.url);
+                var authenticator = godauth.create(_settings.godAuth.secret, "https://" + request.headers.host + request.url);
                 authSuccess = authenticator.authenticateRequest(request, response);
                 console.log(authSuccess);
                 if (!authSuccess) {
