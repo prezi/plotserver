@@ -446,8 +446,9 @@ if ("https" in config.settings && config.settings.https.redirectHttp) {
     // Redirect to https
     console.log('Setting up HTTP to HTTPS redirect');
     http.createServer(function (req, res) {
-        res.writeHead(301, {'Location': config.settings.urlBase});
-        res.end("<a href='" + config.settings.urlBase + "'>" + config.settings.urlBase + "</a>");
+        redirectUrl = config.settings.urlBase + req.url;
+        res.writeHead(301, {'Location': redirectUrl});
+        res.end("<a href='" + redirectUrl + "'>" + redirectUrl + "</a>");
     }).listen(config.settings.httpPort);
     port = config.settings.https.port;
 }
