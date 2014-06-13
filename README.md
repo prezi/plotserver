@@ -15,10 +15,10 @@ git clone git@github.com:prezi/plotserver.git
 cd plotserver
 npm install
 node plotserver.js config/test.js
-# open http://localhost:9090 in your browser
+# open http://localhost:9001 in your browser
 ```
 
-Cool samples under `http://localhost:9090/samples` :)
+Cool samples under `http://localhost:9001/samples` :)
 
 ## Detailed Description
 
@@ -37,7 +37,7 @@ Let's say you have some simple CSV (comma seperated values) data, like
 
 You just want to quickly visualize it, and then share with some of your co-workers. Plotserver to the rescue!
 
-Just open `http://localhost:9090/yourname/dataset`, copy and paste your data, and the chart appears!
+Just open `http://localhost:9001/yourname/dataset`, copy and paste your data, and the chart appears!
 
 ![Plotserver screenshot](https://github.com/prezi/plotserver/wiki/screenshot.png)
 
@@ -50,7 +50,7 @@ The command line is in the `cli` directory:
 
 ```bash
 # above example from the command line
-$ cat <<EOF | cli/plotserver set "http://localhost:9090/yourname/dataset"
+$ cat <<EOF | cli/plotserver set "http://localhost:9001/yourname/dataset"
 2013-01-01, 1
 2013-01-02, 4
 2013-01-03, 9
@@ -58,7 +58,7 @@ $ cat <<EOF | cli/plotserver set "http://localhost:9090/yourname/dataset"
 2013-01-05, 25
 EOF
 # verify it was written
-$ cli/plotserver cat "http://localhost:9090/yourname/dataset"
+$ cli/plotserver cat "http://localhost:9001/yourname/dataset"
 ```
 
 ## How do we use Plotserver at Prezi?
@@ -75,7 +75,7 @@ The cli tool has a conveniance feature: if you set `$PLOTSERVER_HOST`, then you 
 
 ```bash
 # above example from the command line
-$ export PLOTSERVER_HOST="http://localhost:9090/"
+$ export PLOTSERVER_HOST="http://localhost:9001/"
 $ cat <<EOF | cli/plotserver set "yourname/dataset"
 2013-01-01, 1
 2013-01-02, 4
