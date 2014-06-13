@@ -10,5 +10,9 @@
     "posix": "*"
   },
   "engine": "node >= 0.8.12",
-  "scripts": {"start": "node plotserver.js config/test.js"}
+  "scripts": {"start": "node plotserver.js config/test.js"},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prezi/plotserver.git"
+  }
 }
