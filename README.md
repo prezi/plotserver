@@ -5,7 +5,6 @@
 Plotserver is a node.js application for easy plotting of timeseries and other simple XY data.
 
 ## Installation
----
 
 You will need a working node.js installation and git:
 
