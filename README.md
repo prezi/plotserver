@@ -1,5 +1,4 @@
 # Plotserver
-============
 
 ## In 20 words or less?
 
