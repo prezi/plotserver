@@ -78,10 +78,24 @@ createFullPath = function(fullPath, callback) {
         recursePathList(pathList);
 };
 
+secureReadFile = function(path, arg1, arg2) {
+    var staticPath = fs.realpathSync("./static");
+    var publicPath = fs.realpathSync("./public");
+    var resolvedPath = fs.realpathSync(path);
+    if (resolvedPath.indexOf(staticPath) === 0 || resolvedPath.indexOf(publicPath) === 0) {
+        fs.readFile.apply(this, arguments);
+    } else {
+        if (typeof(arg2) == "function")
+            arg2("error");
+        else if (typeof(arg1) == "function")
+            arg1("error");
+    }
+}
+
 var HttpGet = {};
 
 HttpGet.static = function(request, response) {
-    fs.readFile(request.path,
+    secureReadFile(request.path,
     function (err, fileContents) {
         if (err)
             return httpNotFound(response);
@@ -130,7 +144,7 @@ HttpGet.get = function(request, response) {
             log.debug("dir");
         } else {
             log.debug("file");
-            fs.readFile(request.path, "utf8", function (err, fileContents) {
+            secureReadFile(request.path, "utf8", function (err, fileContents) {
                 var functionName = request.urls.query["jsonp"];
                 var json = "";
                 if (err) {
@@ -156,7 +170,7 @@ HttpGet.getOptions = function(request, response) {
             log.debug("dir");
         } else {
             log.debug("file");
-            fs.readFile(request.path + ".options", "utf8", function (err, fileContents) {
+            secureReadFile(request.path + ".options", "utf8", function (err, fileContents) {
                 var functionName = request.urls.query["jsonp"];
                 var js = "";
                 if (err) {
@@ -174,7 +188,7 @@ HttpGet.getOptions = function(request, response) {
 };
 
 HttpGet.download = function(request, response) {
-    fs.readFile(request.path, "utf8",
+    secureReadFile(request.path, "utf8",
         function (err, fileContents) {
             if (err)
                 return httpNotFound(response);
@@ -293,7 +307,7 @@ HttpPost.update = function(request, response) {
             response.end(js);
             return;
         }
-        fs.readFile(request.path, "utf8", function (err, fileContents) {
+        secureReadFile(request.path, "utf8", function (err, fileContents) {
             try {
                 var newFileContents = "";
                 if (err) {
