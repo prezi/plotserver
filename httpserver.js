@@ -210,7 +210,8 @@ var HttpServer = function(settings) {
         var _options = {
             key: fs.readFileSync(_settings.httpsOptions.key),
             cert: fs.readFileSync(_settings.httpsOptions.cert),
-            secureProtocol: https.TLSv1_method
+            secureProtocol: 'SSLv23_method',
+            secureOptions: require('constants').SSL_OP_NO_SSLv3
         };
     }
 };
