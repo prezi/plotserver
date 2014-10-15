@@ -209,7 +209,8 @@ var HttpServer = function(settings) {
     if (_settings.port == 443) {
         var _options = {
             key: fs.readFileSync(_settings.httpsOptions.key),
-            cert: fs.readFileSync(_settings.httpsOptions.cert)
+            cert: fs.readFileSync(_settings.httpsOptions.cert),
+            secureProtocol: https.TLSv1_method
         };
     }
 };
